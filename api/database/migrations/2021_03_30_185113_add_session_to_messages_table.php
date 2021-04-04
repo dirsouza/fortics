@@ -14,7 +14,7 @@ class AddSessionToMessagesTable extends Migration
     public function up()
     {
         Schema::table('messages', function (Blueprint $table) {
-            $table->unsignedBigInteger('session_id')->after('id');
+            $table->unsignedBigInteger('session_id')->after('id')->nullable();
             $table->foreign('session_id')->references('id')->on('sessions')->onDelete('cascade');
         });
     }
