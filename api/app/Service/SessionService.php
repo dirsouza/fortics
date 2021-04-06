@@ -5,21 +5,38 @@ namespace App\Service;
 use App\Models\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use function json_decode;
 
+/**
+ * Class SessionService
+ * @package App\Service
+ */
 class SessionService
 {
     use ReturnService;
 
+    /**
+     * @var Session
+     */
     private Session $session;
+    /**
+     * @var MessageService
+     */
     private MessageService $messageService;
 
+    /**
+     * SessionService constructor.
+     * @param Session $session
+     * @param MessageService $messageService
+     */
     public function __construct(Session $session, MessageService $messageService)
     {
         $this->session = $session;
         $this->messageService = $messageService;
     }
 
+    /**
+     * @return array
+     */
     public function getSessions(): array
     {
         try {
@@ -27,12 +44,16 @@ class SessionService
 
             throw_if(!$sessions->count(), \Exception::class, 'Nenhuma conversa encontrada!', 404);
 
-            return $this->returnData(true, 'Conversas econtradas!', $sessions, 200);
+            return $this->returnData(true, 'Conversas encontradas!', $sessions, 200);
         } catch (\Throwable $e) {
             return $this->returnData(false, $e->getMessage(), null, $e->getCode());
         }
     }
 
+    /**
+     * @param int $identifier
+     * @return array
+     */
     public function getSessionByIdentifier(int $identifier): array
     {
         try {
@@ -46,23 +67,27 @@ class SessionService
         }
     }
 
+    /**
+     * @param Request $request
+     * @return array
+     */
     public function verifySession(Request $request): array
     {
-        try {
-            $session = $this->getSessionByIdentifier($request->contact_identifier);
+        $session = $this->getSessionByIdentifier($request->contact_identifier);
 
-            if ($session['success']) {
-                $sessionData = $this->session->find($session['data']['id']);
+        if ($session['success']) {
+            $sessionData = $this->session->find($session['data']['id']);
 
-                return $this->updateSession($sessionData, $request);
-            }
-
-            return $this->createSession($request);
-        } catch (\Throwable $e) {
-            return $this->returnData(false, $e->getMessage(), null, $e->getCode());
+            return $this->updateSession($sessionData, $request);
         }
+
+        return $this->createSession($request);
     }
 
+    /**
+     * @param Request $request
+     * @return array
+     */
     public function createSession(Request $request): array
     {
         DB::beginTransaction();
@@ -78,6 +103,8 @@ class SessionService
 
             $message = $this->messageService->createMessage($session, $request);
 
+            throw_if(!$message['success'], \Exception::class, $message['message'], $message['code']);
+
             DB::commit();
 
             $session->message = $message['data'];
@@ -90,6 +117,11 @@ class SessionService
         }
     }
 
+    /**
+     * @param Session $session
+     * @param Request $request
+     * @return array
+     */
     public function updateSession(Session $session, Request $request): array
     {
         try {
@@ -103,6 +135,10 @@ class SessionService
         }
     }
 
+    /**
+     * @param int $identifier
+     * @return array
+     */
     public function deleteSession(int $identifier): array
     {
         DB::beginTransaction();
@@ -122,6 +158,10 @@ class SessionService
         }
     }
 
+    /**
+     * @param Request $request
+     * @return array
+     */
     public function uploadSessions(Request $request): array
     {
         DB::beginTransaction();
@@ -141,6 +181,10 @@ class SessionService
         }
     }
 
+    /**
+     * @param Request $request
+     * @return \Generator
+     */
     private function genIteratorSessions(Request $request)
     {
         foreach (json_decode($request->file, true) as $session) {
