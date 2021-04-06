@@ -7,6 +7,7 @@ use App\Models\Session;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 class MessageService
@@ -32,7 +33,8 @@ class MessageService
                 $message = $session->messages()->createMany($request->messages);
             } else {
                 $message = $session->messages()->create([
-                    'content' => $request->message,
+                    'content'   => $request->message,
+                    'date'      => $request->date ?? Date::now(),
                 ]);
             }
 
