@@ -28,7 +28,7 @@ class MessageUnitTest extends TestCase
      */
     public function testGuarded()
     {
-        $this->assertEquals(['id', 'date'], $this->message->getGuarded());
+        $this->assertEquals(['id'], $this->message->getGuarded());
     }
 
     /**
