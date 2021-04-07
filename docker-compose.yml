@@ -1,0 +1,66 @@
+version: '3'
+
+networks:
+  fortics_net:
+    driver: bridge
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: fortics_api
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./api:/var/www
+    networks:
+      - fortics_net
+    depends_on:
+      - db
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: fortics_nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 8080:80
+    volumes:
+      - ./api:/var/www
+    networks:
+      - fortics_net
+    depends_on:
+      - api
+
+  db:
+    image: mysql:5.7
+    container_name: fortics_db
+    restart: unless-stopped
+    tty: true
+    command: --innodb-use-native-aio=0
+    ports:
+      - 3306:3306
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+      - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_DATABASE=fortics
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - fortics_net
+
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    container_name: fortics_bot
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./bot:/usr/src/app
+    networks:
+      - fortics_net
