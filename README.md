@@ -38,3 +38,37 @@ propriedade indicada.
    ```bash
    docker-compose up --build
    ```
+
+### - Testando os projetos
+- API: é possível testar a API via cliente REST através da url `http://localhost:8080/api/v1` e completando com as 
+  devidas rotas, que são:
+  - [ GET    ] /sessions
+    > Essa rota retorna todas conversão cadastradas e ainda é possível fazer um filtro nome de uma pessoa, passando 
+      a propriedade `name` como *query params*.
+    >
+    > Exemplos: `http://localhost:8080/api/v1/sessions` ou `http://localhost:8080/api/v1/sessions?name=fulano`
+  - [ POST   ] /sessions
+    > Essa rota tem por objetivo o cadastro de conversa, e para que o cadastro ocorra, os dados obrigatórios devem 
+      serem enviados via **body**.
+    > 
+    > Exemplo: `http://localhost:8080/api/v1/sessions`
+    > ```json
+    > # body
+    > {
+    >     "name": "Fulano de Tal",
+    >     "platform_type": "Insomnia",
+    >     "contact_identifier": 987654321,
+    >     "message": "Teste de envio de mensagem 1"
+    > }
+    > ```
+  - [ DELETE ] /sessions/{identifier}
+    > Essa rota tem por objetivo excluir uma conversa passando por parâmetro o código identificador do usuário.
+    > 
+    > Exemplo: `http://localhost:8080/api/v1/sessions/987654321`
+  - [ POST   ] /sessions/upload
+    > Essa rota tem por objetivo importar uma lista de convesas no padrão esperado e cadastrar na aplicação.
+      E por se tratar de um arquivo, o **header** deve ser um `Content-Type: multipart/form-data`, e o arquivo deve 
+      ser enviado por meio de um `Multipart Form`, tendo como atributo o `file`.
+
+- Chatbot: No chat via telegram, o bot somente irá cadastrar a mensagem enviada, respondendo se a mensagem foi ou 
+  não recebida. Para testar, basta escrever qualquer coisa para o bot.
