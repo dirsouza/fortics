@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Models\Session;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -188,7 +189,13 @@ class SessionService
     private function genIteratorSessions(Request $request)
     {
         foreach (json_decode($request->file, true) as $session) {
-            $collectSession = collect($session)->except(['_id']);
+            $collectSession = collect($session)->except(['_id', 'messages']);
+            $collectMessages = collect($session['messages'])->map(function ($message) {
+                $message['date'] = Date::create($message['date']);
+                return $message;
+            });
+
+            $collectSession['messages'] = $collectMessages;
 
             yield $collectSession->toArray();
         }
